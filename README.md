@@ -126,38 +126,49 @@ The application integrates with the Governance Hub API endpoints:
 
 ### Initial Configuration
 
-**⚠️ Important: Before using the application, you must configure your API settings.**
+**⚠️ Important: Before using the application, you must configure your environment variables.**
 
-1. **Start your Governance Hub API server** (if not already running)
-2. **Open the application** in your browser at `http://localhost:3001`
-3. **Navigate to the Settings tab** (third tab in the navigation)
-4. **Configure your API connection:**
-   - **API URL**: Enter your Governance Hub API URL (default: `http://localhost:8080/api`)
-   - **API Key**: Enter your API authentication key
-5. **Test the connection** using the "Test Connection" button
-6. **Save your settings** - they will be stored locally in your browser
+1. **Configure your `.env` file** (Required):
+   ```bash
+   # Copy the example file
+   cp .env.example .env
+   
+   # Edit the .env file with your settings
+   VITE_GOVERNANCE_URL=http://localhost:8081
+   VITE_API_KEY=your-api-key-here
+   ```
+
+2. **Start your Governance Hub API server** (if not already running)
+3. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+4. **Open the application** in your browser at `http://localhost:3001`
+5. **Navigate to the Settings tab** to verify your configuration
+6. **Test the connection** using the "Test Connection" button
 
 ### Backend Setup
 
-The application is designed to work with the Tyk Governance Hub API. By default, it expects the API to be running on `http://localhost:8080`. 
+The application is designed to work with the Tyk Governance Hub API. The API URL and authentication are configured via environment variables for security.
 
 To set up the backend:
 
-1. **Start the Governance Hub API server** on port 8080
+1. **Start the Governance Hub API server** (default port 8081)
 2. **Obtain an API key** from your Governance Hub instance
-3. **Configure the connection** in the Settings page of this application
+3. **Configure the environment variables** in your `.env` file
+4. **Restart the development server** to pick up the new configuration
 
-The application uses a Vite proxy for local development to avoid CORS issues when connecting to `localhost:8080`.
+The application uses a Vite proxy for local development to avoid CORS issues.
 
 ## Usage Guide
 
 ### Initial Setup
 
-1. **Configure API Settings** (Required before first use):
-   - Click on the "Settings" tab
-   - Enter your Governance Hub API URL
-   - Enter your API key
-   - Test the connection and save
+1. **Configure Environment Variables** (Required before first use):
+   - Set `VITE_GOVERNANCE_URL` to your API server URL
+   - Set `VITE_API_KEY` to your authentication key
+   - Restart the development server
+   - Verify configuration in the Settings tab
 
 ### Managing Rulesets
 
@@ -240,10 +251,10 @@ The application supports environment-based configuration for secure API access:
 **Important Note:** The vite.config.js uses Vite's `loadEnv` function to properly load environment variables. This ensures that your .env file is correctly read during development.
 
 ### API Settings
-The application stores API configuration in your browser's local storage:
+The application now uses secure environment variable configuration:
 - **API URL**: Automatically configured from `VITE_GOVERNANCE_URL` environment variable
-- **API Key**: Authentication key for API access (must be configured in Settings)
-- **Non-modifiable URL**: The API URL field is read-only in the Settings page
+- **API Key**: Configured from `VITE_API_KEY` environment variable (no longer stored in browser)
+- **Read-only Settings**: The Settings page displays configuration status rather than editable fields
 
 ### Development Configuration
 The Vite development server is configured to:
@@ -263,10 +274,11 @@ The Vite development server is configured to:
 
 1. **Clone or extract the project**
 2. **Install dependencies**: `npm install`
-3. **Start your Governance Hub API** on port 8080
-4. **Start the development server**: `npm run dev`
-5. **Configure API settings** in the Settings tab
-6. **Begin using the application**
+3. **Configure environment variables**: `cp .env.example .env` and edit with your settings
+4. **Start your Governance Hub API** on the configured port
+5. **Start the development server**: `npm run dev`
+6. **Verify configuration** in the Settings tab
+7. **Begin using the application**
 
 ## Features in Detail
 
@@ -330,10 +342,12 @@ The Vite development server is configured to:
 
 ## Security Considerations
 
-- API keys are stored locally in browser storage
-- No API keys are hardcoded in the application
-- All API communication uses HTTPS in production
-- Settings are isolated per browser/device
+- **API keys are configured via environment variables** (no longer stored in browser storage)
+- **No API keys are hardcoded** in the application
+- **Environment variables are build-time only** - compiled into the JavaScript bundle
+- **All API communication uses HTTPS** in production
+- **Secure configuration management** - sensitive data managed at deployment level
+- **No localStorage exposure** - API keys cannot be accessed via browser developer tools
 
 ## Contributing
 
@@ -357,10 +371,28 @@ The build artifacts will be stored in the `dist/` directory.
 ### Environment Configuration
 
 For production deployment:
-1. Build the application
-2. Serve the static files from a web server
-3. Users will configure their API settings through the Settings page
-4. Ensure your Governance Hub API is accessible from client browsers
+
+1. **Configure environment variables** for your deployment environment:
+   ```bash
+   # Production environment variables
+   VITE_GOVERNANCE_URL=https://your-governance-api.example.com
+   VITE_API_KEY=your-production-api-key
+   ```
+
+2. **Build the application** with the production environment:
+   ```bash
+   npm run build
+   ```
+
+3. **Serve the static files** from a web server (nginx, Apache, etc.)
+
+4. **Ensure your Governance Hub API** is accessible from client browsers
+
+**Important Notes:**
+- Environment variables are compiled into the JavaScript bundle at build time
+- Different builds are required for different environments (dev/staging/prod)
+- API keys are embedded in the client-side code, so use appropriate keys for each environment
+- Consider using CI/CD pipelines to manage environment-specific builds securely
 
 ## License
 
