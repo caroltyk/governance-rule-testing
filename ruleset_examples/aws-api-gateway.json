@@ -1,0 +1,234 @@
+{
+  "description": "**Set of rules to enforce Amazon API Gateway Guidelines**\n\nBased on limitations mentioned here: \n- https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-known-issues.html\n\nTo use these rules:\n \n1. Go to your Stoplight workspace.\n2. Create a [style guide project](https://meta.stoplight.io/docs/platform/364e30f79daa0-create-a-style-guide) OR edit a project that has an API.\n3. Select **Manage Style Guides**.\n4. Enable `AWS API Gateway` from list of public style guides.\n\nYou can then:\n\n- Use the style guide as-is to [automatically lint](https://meta.stoplight.io/docs/platform/7975f76a794c4-validation-and-linting) your API files\n- [Disable individual rules](https://meta.stoplight.io/docs/platform/3f80fd36750e3-disable-inherited-rules)  that do not follow your organization's standards\n- [Reuse and customize rules](https://meta.stoplight.io/docs/platform/2331c5241ddfc) to meet your needs\n\nIf you have suggestions on how to improve the ruleset or find any bugs, you can open an issue [here](https://github.com/andylockran/spectral-aws-apigateway-ruleset).",
+  "formats": [
+    "oas2",
+    "oas3",
+    "oas3.0",
+    "oas3.1"
+  ],
+  "aliases": {},
+  "rules": {
+    "aws-openapi-version": {
+      "given": [
+        "$."
+      ],
+      "severity": "error",
+      "then": {
+        "function": "pattern",
+        "functionOptions": {
+          "match": "^3.0.1"
+        },
+        "field": "openapi"
+      },
+      "description": "The OpenAPI version must be 3.0.1. This is the version set when the API was [exported from the REST interface](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-export-api.html).\r\n\r\n**Invalid Example**\r\n\r\n```yaml\r\nopenapi: 3.0.0\r\n```\r\n\r\n**Valid Example**\r\n\r\n```yaml\r\nopenapi: 3.0.1\r\n```",
+      "message": "{{error}}"
+    },
+    "aws-path-segments": {
+      "given": [
+        "$.paths"
+      ],
+      "severity": "error",
+      "then": {
+        "function": "pattern",
+        "functionOptions": {
+          "match": "^(?:\\/)?(?:[a-zA-Z0-9\\-.,]+|\\{[a-zA-Z0-9\\-.,]+\\})(?:\\/(?:[a-zA-Z0-9\\-.,]+|\\{[a-zA-Z0-9\\-.,]+\\}))*(\\/?)$"
+        },
+        "field": "@key"
+      },
+      "description": "Path segments can only contain alphanumeric characters, hyphens, periods, commas, and curly braces. Path parameters must be separate path segments. \r\n\r\n**Invalid Examples**\r\n\r\n`resource/{path_parameter_name}`\r\n\r\n`/@users/{userId}`\r\n\r\n**Valid Examples**\r\n\r\n`resource/{path-parameter-name}`\r\n\r\n`/users/{userId}`"
+    },
+    "aws-model-names": {
+      "given": [
+        "$.components.schemas"
+      ],
+      "severity": "error",
+      "then": {
+        "function": "pattern",
+        "functionOptions": {
+          "match": "^[A-Za-z0-9]+$"
+        },
+        "field": "@key"
+      },
+      "description": "Model names can only contain alphanumeric characters.\r\n\r\n**Invalid Example**\r\n\r\n```yaml\r\nProducts+:\r\n```\r\n\r\n**Valid Example**\r\n```yaml    \r\nProducts:\r\n```"
+    },
+    "aws-allowed-parameters": {
+      "given": [
+        "$.components.parameters.*"
+      ],
+      "severity": "warn",
+      "then": {
+        "function": "enumeration",
+        "functionOptions": {
+          "values": [
+            "name",
+            "in",
+            "required",
+            "type",
+            "description"
+          ]
+        },
+        "field": "@key"
+      },
+      "description": "For `input` parameters, the following attributes are supported: \r\n\r\n`name`\r\n\r\n`in`\r\n\r\n`required`\r\n\r\n`type`\r\n\r\n`description`\r\n\r\nOther attributes are ignored, including `schema` definitions, which are not applied to `input` parameters during basic validation in the header or query string.\r\n\r\n**Invalid Example**\r\n\r\nThis example contains a `schema` input parameter, making it invalid.\r\n\r\n```yaml\r\n    pet-id:\r\n      description: Shared path parameter for petId\r\n      name: petId\r\n      in: path\r\n      required: true\r\n      schema:\r\n        type: string\r\n```\r\n\r\n**Valid Example**\r\n\r\n```yaml\r\n    pet-id:\r\n      description: Shared path parameter for petId\r\n      name: petId\r\n      in: path\r\n      required: true\r\n```\r\n",
+      "message": "{{error}}"
+    },
+    "aws-securitySchemes": {
+      "given": [
+        "$.components.securitySchemes.*"
+      ],
+      "severity": "warn",
+      "then": {
+        "function": "pattern",
+        "functionOptions": {
+          "match": "apiKey"
+        },
+        "field": "type"
+      },
+      "description": "The `securitySchemes` type, if used, must be of type `apiKey`.\r\n\r\n**Invalid Example**\r\n\r\nThis example uses the `oauth2` securityScheme type, making it invalid.\r\n\r\n```yaml\r\n  securitySchemes:\r\n    petstore_auth:\r\n      type: oauth2\r\n```\r\n\r\n**Valid Example**\r\n\r\nThis valid example uses the `apiKey` securityScheme type.\r\n\r\n```yaml\r\n  securitySchemes:\r\n    petstore_auth:\r\n      type: apiKey\r\n```"
+    },
+    "aws-ignore-deprecated": {
+      "given": [
+        "$.paths[*][*]"
+      ],
+      "severity": "warn",
+      "then": {
+        "function": "undefined",
+        "field": "deprecated"
+      },
+      "description": "The deprecated field is not supported for operations. In exported APIs, this field is excluded.\r\n\r\n**Invalid Example**\r\n\r\n```yaml\r\n    get:\r\n      description: Get pets\r\n      operationId: getPets\r\n      deprecated: true\r\n```\r\n\r\n**Valid Example**\r\n\r\n```yaml\r\n    get:\r\n      description: Get pets\r\n      operationId: getPets\r\n```"
+    },
+    "aws-model-field-additionalProperties": {
+      "given": [
+        "$.components.schemas.*"
+      ],
+      "severity": "hint",
+      "then": {
+        "function": "defined",
+        "field": "additionalProperties"
+      },
+      "description": "The additionalProperties field is supported in Models.  However, if you remove it, it will remain set to the last value specified."
+    },
+    "aws-model-fields-anyOf": {
+      "given": [
+        "$.components.schemas.*"
+      ],
+      "severity": "error",
+      "then": {
+        "function": "undefined",
+        "field": "anyOf"
+      },
+      "description": "The `anyOf` combiner is not supported in API Gateway.\r\n\r\n**Invalid Example**\r\n\r\nThe `anyOf` schema combiner makes this example invalid.\r\n\r\n```yaml\r\n  anyOf:\r\n   properties:\r\n     id:\r\n       type: string\r\n     lastName:\r\n       type: string\r\n type: object\r\n```\r\n\r\n**Valid Example**\r\n\r\nThis examples does not include the `anyOf` schema combiner, making it valid.\r\n\r\n```yaml\r\n    properties:\r\n     id:\r\n       type: string\r\n     lastName:\r\n       type: string\r\n type: object\r\n```",
+      "message": "{{error}}"
+    },
+    "aws-model-discriminator": {
+      "given": [
+        "$.components.schemas.*"
+      ],
+      "severity": "error",
+      "then": {
+        "function": "undefined",
+        "field": "discriminator"
+      },
+      "description": "The `discriminator` object is not supported in any schema object.\r\n\r\n**Invalid Example**\r\n\r\nA `discriminator` is used in this example, making it invalid.\r\n\r\n```yaml\r\nMyResponseType:\r\n  oneOf:\r\n  - $ref: '#/components/schemas/Cat'\r\n  - $ref: '#/components/schemas/Dog'\r\n  - $ref: '#/components/schemas/Lizard'\r\n  discriminator:\r\n    propertyName: petType\r\n```\r\n\r\n**Valid Example**\r\n\r\nThis example does not contain a `discriminator`, making it valid.\r\n\r\n```yaml\r\nMyResponseType:\r\n  oneOf:\r\n  - $ref: '#/components/schemas/Cat'\r\n  - $ref: '#/components/schemas/Dog'\r\n  - $ref: '#/components/schemas/Lizard'\r\n```"
+    },
+    "aws-example-tag": {
+      "given": [
+        "$..example"
+      ],
+      "severity": "hint",
+      "then": {
+        "function": "undefined"
+      },
+      "description": "API Gateway does not not support the `example` keyword for schema properties, but including it does no harm.\r\n\r\n**Example**\r\n\r\n```yaml\r\n   dateOfBirth:\r\n      type: string\r\n      format: date\r\n      example: '1997-10-31'\r\n```",
+      "message": "{{example}}"
+    },
+    "aws-exclusive-minimum": {
+      "given": [
+        "$..exclusiveMinimum"
+      ],
+      "severity": "error",
+      "then": {
+        "function": "undefined"
+      },
+      "description": "API Gateway does not support exclusiveMinimum.\r\n\r\n**Invalid Example**\r\n\r\n`exclusiveMinimum` is set, making this example invalid.\r\n\r\n```yaml\r\n    id:\r\n        type: integer\r\n        format: int64\r\n        exclusiveMinimum: true\r\n```\r\n\r\n**Valid Example**\r\n\r\nThere is no `exclusiveMinimum` set, making this example valid.\r\n\r\n```yaml\r\n        id:\r\n          type: integer\r\n          format: int64\r\n```",
+      "message": "{{error}}"
+    },
+    "aws-supported-formats": {
+      "given": [
+        "$..format"
+      ],
+      "severity": "off",
+      "then": {
+        "function": "enumeration",
+        "functionOptions": {
+          "values": [
+            "date-time",
+            "email",
+            "hostname",
+            "ipv4",
+            "ipv6",
+            "uri"
+          ]
+        },
+        "field": "@key"
+      },
+      "description": "Format not supported by JSONSchema4, therefore may be ignored"
+    },
+    "aws-oneOf": {
+      "given": [
+        "$..oneOf"
+      ],
+      "severity": "error",
+      "then": {
+        "function": "undefined"
+      },
+      "description": "The `oneOf` combiner is not supported in API Gateway.\r\n\r\n**Invalid Example**\r\n\r\nThe `oneOf` schema combiner makes this example invalid.\r\n\r\n```yaml\r\n  oneOf:\r\n   properties:\r\n     id:\r\n       type: string\r\n     lastName:\r\n       type: string\r\ntype: object\r\n```\r\n\r\n**Valid Example**\r\n\r\nThis examples does not include the `oneOf` schema combiner, making it valid.\r\n\r\n```yaml\r\n    properties:\r\n       id:\r\n         type: string\r\n       lastName:\r\n         type: string\r\n type: object\r\n```",
+      "message": "{{error}}"
+    },
+    "aws-readOnly": {
+      "given": [
+        "$..readOnly"
+      ],
+      "severity": "warn",
+      "then": {
+        "function": "undefined"
+      },
+      "description": "API Gateway doesn't support the `readOnly` setting for properties.\r\n\r\n**Invalid Example**\r\n\r\nProperty is set to readOnly\r\n\r\n```yaml\r\n    email:\r\n        type: string\r\n        readOnly: true\r\n```\r\n**Valid Examples**\r\n\r\nYou can set a property to read/write, write only, or omit it this setting.\r\n\r\n```yaml\r\n    email: \r\n       type: string\r\n       readWrite: true\r\n```",
+      "message": "{{error}}"
+    },
+    "aws-default": {
+      "given": [
+        "$.components.schemas.*.properties.*"
+      ],
+      "severity": "error",
+      "then": {
+        "function": "undefined",
+        "field": "default"
+      },
+      "description": "The default keyword is not supported in API Gateway.\r\n\r\n**Invalid Example**\r\n\r\n`available` is set as a default, making this example invalid.\r\n\r\n```yaml\r\n   status:\r\n     type: string\r\n     description: pet status in the store\r\n     enum:\r\n       - available\r\n       - pending\r\n       - sold\r\n     default: available\r\n```\r\n\r\n**Valid Example**\r\n\r\nNo default is set, making this example valid.\r\n\r\n```yaml\r\n   status:\r\n     type: string\r\n     description: pet status in the store\r\n     enum:\r\n       - available\r\n       - pending\r\n       - sold\r\n```"
+    },
+    "aws-proxy": {
+      "given": [
+        "$..x-amazon-apigateway-integration[?(@ == \"aws_proxy\")"
+      ],
+      "severity": "warn",
+      "then": {
+        "function": "undefined",
+        "field": "passthroughBehavior"
+      },
+      "description": "For API Gateway integrations, `passThroughBehaviour` is ignored when `aws_proxy` type is set. See the [API Gateway documentation](https://docs.aws.amazon.com/apigateway/latest/developerguide/integration-passthrough-behaviors.html) to learn more about passthrough behaviors.\r\n\r\n**Invalid Example**\r\n\r\n```yaml\r\ncomponents:\r\n  x-amazon-apigateway-integrations:\r\n    integration1:\r\n      type: aws_proxy\r\n      httpMethod: POST\r\n      uri: 'arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:123456789012:function:my-function/invocations'\r\n      passthroughBehavior: when_no_templates\r\n      payloadFormatVersion: '1.0'\r\n```\r\n\r\n**Valid Example**\r\n\r\n```yaml\r\ncomponents:\r\n  x-amazon-apigateway-integrations:\r\n    integration1:\r\n      httpMethod: POST\r\n      uri: 'arn:aws:apigateway:us-east-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-2:123456789012:function:my-function/invocations'\r\n      passthroughBehavior: when_no_templates\r\n      payloadFormatVersion: '1.0'\r\n```"
+    },
+    "jsonschema-draft4-validation": {
+      "given": [
+        "$"
+      ],
+      "severity": "off",
+      "then": {
+        "function": "truthy"
+      },
+      "description": "The model schemas are valid",
+      "message": "{{error}}"
+    }
+  },
+  "functionsDir": "functions"
+}

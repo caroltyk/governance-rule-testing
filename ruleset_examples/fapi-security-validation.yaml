@@ -1,0 +1,62 @@
+description: "FAPI Security Validation Ruleset - Validates that APIs comply with FAPI security requirements including JWT authentication with ECDSA signing and DPoP middleware"
+documentationUrl: https://openbanking.org.uk/
+formats:
+  - oas3
+  - oas3_0
+  - oas3_1
+rules:
+  tyk-fapi-dpopcheck-driver:
+    description: "FAPI requires the middleware to use gRPC driver."
+    message: "Middleware must use gRPC driver."
+    severity: error
+    given: $.["x-tyk-api-gateway"].middleware.global.pluginConfig
+    then:
+      field: driver
+      function: pattern
+      functionOptions:
+        match: "^grpc$"
+
+  tyk-fapi-dpopcheck-plugin-exists:
+    description: "FAPI requires the DPoPCheck middleware to be enabled."
+    message: "DPoPCheck plugin must exist in prePlugins and be enabled."
+    severity: error
+    given: $.["x-tyk-api-gateway"].middleware.global
+    then:
+      field: prePlugins
+      function: schema
+      functionOptions:
+        schema:
+          type: array
+          contains:
+            type: object
+            properties:
+              functionName:
+                const: "DPoPCheck"
+              enabled:
+                const: true
+              rawBodyOnly:
+                const: true
+            required: ["functionName", "enabled", "rawBodyOnly"]
+
+  tyk-jwt-auth-enabled-check:
+    description: "Validates that JWT authentication is properly configured"
+    message: "When JWT authentication is enabled, it must use ECDSA signing method"
+    severity: error
+    given: $.["x-tyk-api-gateway"].server.authentication.securitySchemes.*
+    then:
+      - 
+        field: signingMethod
+        function: schema
+        functionOptions:
+          schema:
+            type: string
+            const: "ecdsa"
+          forceValidation: true
+      -
+        field: enabled
+        function: schema
+        functionOptions:
+          schema:
+            type: boolean
+            const: true
+          forceValidation: true

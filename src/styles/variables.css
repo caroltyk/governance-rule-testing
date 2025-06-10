@@ -1,0 +1,82 @@
+/* Design System Variables - Matching Frontend App */
+
+:root {
+  /* Colors */
+  --color-purple-dark: #2A0B60;
+  --color-purple-light: #4A0B60;
+  --color-pink: #B829CA;
+  --color-pink-light: #FDF7FE;
+
+  /* Text Colors */
+  --color-text-primary: #4A5568;
+  --color-text-hover: #2D3748;
+  --color-text-muted: #A0AEC0;
+  --color-text-muted-hover: #718096;
+
+  /* Background Colors */
+  --color-bg-white: #FFFFFF;
+  --color-bg-hover: #F7FAFC;
+  --color-bg-light: #FAFAFA;
+  --color-bg-light-hover: #F5F5F5;
+  --color-background: #FAFAFA;
+
+  /* Border Colors */
+  --color-border: #F0F0F0;
+  --color-border-grey: #D8D8DF;
+
+  /* Overlay Colors */
+  --color-overlay-light: rgba(255, 255, 255, 0.08);
+  --color-overlay-medium: rgba(255, 255, 255, 0.12);
+  --color-overlay-icon: rgba(255, 255, 255, 0.75);
+
+  /* Sizes */
+  --sidebar-width: 240px;
+  --sidebar-collapsed-width: 60px;
+  --icon-section-width: 60px;
+  --menu-item-height: 52px;
+  --sub-item-height: 40px;
+  --top-nav-height: 50px;
+
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* Border Radius */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Typography */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+}
